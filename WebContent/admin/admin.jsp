@@ -26,10 +26,11 @@ IBM AltoroJ
 	<jsp:include page="/bank/membertoc.jspf"/>
 	<td valign="top" colspan="3" class="bb">
 		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+		<%@page import="com.ibm.security.appscan.altoromutual.security.SecurityUtil"%>
 		
 		<%
 		String[] users = ServletUtil.getBankUsers();
-		
+		String csrfToken = SecurityUtil.getOrCreateCsrfToken(request.getSession());
 		%>
 		<script language="javascript">
 		
@@ -58,7 +59,8 @@ IBM AltoroJ
 		java.lang.String error = (String)request.getSession().getAttribute("message");
 		
 		if (error != null && error.trim().length() > 0){
-			out.print(error);
+			out.print(ServletUtil.sanitizeWeb(error));
+			request.getSession().removeAttribute("message");
 		}
 		%>
 		</span></p>
@@ -68,6 +70,7 @@ IBM AltoroJ
 		<table width="100%" border="0">
 		<!-- action="addAccount" -->
 		<form id="addAccount" name="addAccount" action="<%=ServletUtil.isAppPropertyTrue("enableAdminFunctions")?"addAccount":"" %>" method="post">
+		  <input type="hidden" name="csrfToken" value="<%= csrfToken %>"/>
 		  <tr>
 		    <td colspan="4">
 		      <h2>Add an account to an existing user</h2>
@@ -87,7 +90,7 @@ IBM AltoroJ
 		    <td>
 		      	<select name="username" id="username" size="1">
 					<% for (String user:users){ %>
-					<option value="<%=user%>"><%=user%></option>
+					<option value="<%=ServletUtil.sanitizeWeb(user)%>"><%=ServletUtil.sanitizeWeb(user)%></option>
 					<%} %>
 				</select>
 		    </td>
@@ -103,7 +106,8 @@ IBM AltoroJ
 		  </form>
  
  		<!-- action="changePassword" -->
-		  <form id="changePass" name="changePass" action="<%=ServletUtil.getAppProperty("enableAdminFunctions").equalsIgnoreCase("true")?"changePass":"" %>" method="post" onsubmit="return confirmpass(this);">
+		  <form id="changePass" name="changePass" action="<%=ServletUtil.getAppProperty("enableAdminFunctions").equalsIgnoreCase("true")?"changePassword":"" %>" method="post" onsubmit="return confirmpass(this);">
+		  <input type="hidden" name="csrfToken" value="<%= csrfToken %>"/>
 		  <tr>
 		    <td colspan="4"><h2><br><br>Change user's password</h2></td>
 		  </tr>
@@ -123,7 +127,7 @@ IBM AltoroJ
 		    <td>
 		        <select name="username" id="username" size="1">
 					<% for (String user:users){ %>
-					<option value="<%=user%>"><%=user%></option>
+					<option value="<%=ServletUtil.sanitizeWeb(user)%>"><%=ServletUtil.sanitizeWeb(user)%></option>
 					<%} %>
 				</select>
 		    </td>
@@ -139,7 +143,8 @@ IBM AltoroJ
 		  </tr>
 		  </form>
 		  <!-- action="addUser" -->
-		  <form method="post" name="addUser" action="<%=ServletUtil.getAppProperty("enableAdminFunctions").equalsIgnoreCase("true")?"addUser":"" %>" id="addUser" onsubmit="return confirmpass(this);">		  
+		  <form method="post" name="addUser" action="<%=ServletUtil.getAppProperty("enableAdminFunctions").equalsIgnoreCase("true")?"addUser":"" %>" id="addUser" onsubmit="return confirmpass(this);">
+		  <input type="hidden" name="csrfToken" value="<%= csrfToken %>"/>
 		  <tr>
 		    <td colspan="4"><h2><br><br>Add an new user</h2></td>
 		  </tr>

@@ -46,7 +46,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.ibm.security.appscan.Log4AltoroJ;
-import com.ibm.security.appscan.altoromutual.model.Account;
 import com.ibm.security.appscan.altoromutual.model.Feedback;
 import com.ibm.security.appscan.altoromutual.model.User;
 
@@ -340,10 +339,12 @@ public class ServletUtil {
 	public static Cookie establishSession(String username, HttpSession session){
 		try{
 			User user = DBUtil.getUserInfo(username);
-			Account[] accounts = user.getAccounts();
-		    String accountStringList = Account.toBase64List(accounts);
-		    Cookie accountCookie = new Cookie(ServletUtil.ALTORO_COOKIE, accountStringList);
 			session.setAttribute(ServletUtil.SESSION_ATTR_USER, user);
+			// Do not place account IDs/balances in a client-readable cookie.
+			// Keep a non-sensitive marker cookie only for legacy client compatibility.
+			Cookie accountCookie = new Cookie(ServletUtil.ALTORO_COOKIE, "session");
+			accountCookie.setHttpOnly(true);
+			accountCookie.setPath("/");
 		    return accountCookie;
 		}
 		catch(SQLException e){

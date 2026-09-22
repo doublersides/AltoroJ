@@ -11,10 +11,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.wink.json4j.*;
+import com.ibm.security.appscan.altoromutual.security.SecurityUtil;
 import com.ibm.security.appscan.altoromutual.util.DBUtil;
-import com.ibm.security.appscan.altoromutual.util.OperationsUtil;
 
 @Path("/login")
 public class LoginAPI{
@@ -34,7 +33,6 @@ public class LoginAPI{
 		try {
 			myJson =new JSONObject(bodyJSON);
 		} catch (Exception e) {
-			// e.printStackTrace();
 			myJson.clear();
 			myJson.put("error", "body is not JSON");
 			return Response.status(Response.Status.BAD_REQUEST).entity(myJson.toString()).build();
@@ -49,7 +47,7 @@ public class LoginAPI{
 
 		String username, password;
 		username = myJson.get("username").toString().toLowerCase();
-		password = myJson.get("password").toString().toLowerCase();
+		password = myJson.get("password").toString(); // case-sensitive
 
 		myJson.clear();
 		
@@ -68,11 +66,9 @@ public class LoginAPI{
 
 		try {
 			myJson.put("success", username + " is now logged in");
-			
-			//Generate a very basic auth token      			
-			String authToken = Base64.encodeBase64String(username.getBytes()) +":"+ Base64.encodeBase64String(password.getBytes()) +":"+OperationsUtil.makeRandomString();
-			
-			myJson.put("Authorization",Base64.encodeBase64String(authToken.getBytes()));
+			// Opaque server-side token — does not embed credentials
+			String authToken = SecurityUtil.issueApiToken(username);
+			myJson.put("Authorization", authToken);
 			return Response.status(Response.Status.OK).entity(myJson.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 		} catch (Exception ex) {
 			myJson.put("failed", "Unexpected error occured. Please try again.");

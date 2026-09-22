@@ -41,7 +41,8 @@ public class TransferServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		doPost(req, resp);
+		// Transfers must be POST-only to reduce CSRF via forged GET links
+		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "GET not allowed for transfers");
 	}
 	
 	/**

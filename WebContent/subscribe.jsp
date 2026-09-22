@@ -34,10 +34,13 @@ IBM AltoroJ
 			Please enter your email below and we will automatically notify of noteworthy events.</p>
 			
 			<form action="doSubscribe" method="post" name="subscribe" id="subscribe" onsubmit="return confirmEmail(txtEmail.value);">
+			  <%@page import="com.ibm.security.appscan.altoromutual.security.SecurityUtil"%>
+			  <%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+			  <input type="hidden" name="csrfToken" value="<%= SecurityUtil.getOrCreateCsrfToken(request.getSession()) %>"/>
 			  <table>
 			    <tr>
 			      <td colspan="2">
-			        <div style="font-weight: bold; font-size: 12px; color: red;" id="message"><%=(request.getAttribute("message_subscribe")!=null)?request.getAttribute("message_subscribe"):"" %></div>
+			        <div style="font-weight: bold; font-size: 12px; color: red;" id="message"><%=(request.getAttribute("message_subscribe")!=null)?ServletUtil.sanitizeWeb(String.valueOf(request.getAttribute("message_subscribe"))):"" %></div>
 			      </td>
 			    </tr>
 			    <tr>

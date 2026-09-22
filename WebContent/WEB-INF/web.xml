@@ -25,6 +25,16 @@
     <filter-name>AdminFilter</filter-name>
     <filter-class>com.ibm.security.appscan.altoromutual.filter.AdminFilter</filter-class>
   </filter>
+  <filter>
+    <display-name>CsrfFilter</display-name>
+    <filter-name>CsrfFilter</filter-name>
+    <filter-class>com.ibm.security.appscan.altoromutual.filter.CsrfFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>CsrfFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+  </filter-mapping>
   <filter-mapping>
     <filter-name>AuthFilter</filter-name>
     <url-pattern>/bank/*</url-pattern>
@@ -43,7 +53,7 @@
   </filter-mapping>
   <filter-mapping>
     <filter-name>AdminFilter</filter-name>
-    <url-pattern>/adimn/*</url-pattern>
+    <url-pattern>/admin/*</url-pattern>
     <dispatcher>FORWARD</dispatcher>
     <dispatcher>INCLUDE</dispatcher>
     <dispatcher>REQUEST</dispatcher>
@@ -224,4 +234,7 @@
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
+  <session-config>
+    <session-timeout>15</session-timeout>
+  </session-config>
 </web-app>

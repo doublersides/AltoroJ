@@ -1,17 +1,14 @@
 package com.ibm.security.appscan.altoromutual.util;
 
-import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
-import java.util.StringTokenizer;
-import javax.servlet.http.Cookie;
+
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringEscapeUtils;
+
 import com.ibm.security.appscan.altoromutual.model.Account;
 import com.ibm.security.appscan.altoromutual.model.User;
+import com.ibm.security.appscan.altoromutual.security.SecurityUtil;
 
 public class OperationsUtil {
 
@@ -45,26 +42,11 @@ public class OperationsUtil {
 		String userName = user.getUsername();
 		
 		try {
+			// Authorize transfers using the authenticated session user's accounts only
+			// (never trust client-controlled cookies for account membership).
+			Account[] userAccounts = user.getAccounts();
+			
 			Long accountId = -1L;
-			Cookie[] cookies = request.getCookies();
-			
-			Cookie altoroCookie = null;
-			
-			for (Cookie cookie: cookies){
-				if (ServletUtil.ALTORO_COOKIE.equals(cookie.getName())){
-					altoroCookie = cookie;
-					break;
-				}
-			}
-			
-			Account[] cookieAccounts = null;
-			if (altoroCookie == null)
-				cookieAccounts = user.getAccounts();			
-			else
-				cookieAccounts = Account.fromBase64List(altoroCookie.getValue());
-			
-			
-			
 			try {
 				accountId = Long.parseLong(accountIdString);
 			} catch (NumberFormatException e) {
@@ -72,14 +54,14 @@ public class OperationsUtil {
 			}
 			
 			if (accountId > 0) {
-				for (Account account: cookieAccounts){
+				for (Account account: userAccounts){
 					if (account.getAccountId() == accountId){
 						debitActId = account.getAccountId();
 						break;
 					}
 				}
 			} else {
-				for (Account account: cookieAccounts){
+				for (Account account: userAccounts){
 					if (account.getAccountName().equalsIgnoreCase(accountIdString)){
 						debitActId = account.getAccountId();
 						break;
@@ -95,7 +77,7 @@ public class OperationsUtil {
 		String message = null;
 		if (creditActId < 0){
 			message = "Destination account is invalid";
-		} else if (debitActId < 0) {
+		} else if (debitActId <= 0) {
 			message = "Originating account is invalid";
 		} else if (amount < 0){
 			message = "Transfer amount is invalid";
@@ -120,10 +102,6 @@ public class OperationsUtil {
 			String subject, String comments) {
 		
 		if (ServletUtil.isAppPropertyTrue("enableFeedbackRetention")) {
-			email = StringEscapeUtils.escapeSql(email);
-			subject = StringEscapeUtils.escapeSql(subject);
-			comments = StringEscapeUtils.escapeSql(comments);
-
 			long id = DBUtil.storeFeedback(name, email, subject, comments);
 			return String.valueOf(id);
 		}
@@ -132,23 +110,16 @@ public class OperationsUtil {
 	}
 	
 	public static User getUser(HttpServletRequest request) throws SQLException{
-		
-		String accessToken = request.getHeader("Authorization").replaceAll("Bearer ", "");
-		
-		//Get username password and date 
-		String decodedToken = new String(Base64.decodeBase64(accessToken));
-		StringTokenizer tokenizer = new StringTokenizer(decodedToken,":");
-		String username = new String(Base64.decodeBase64(tokenizer.nextToken()));
+		String authHeader = request.getHeader("Authorization");
+		if (authHeader == null || !authHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+			throw new SQLException("Missing authorization token");
+		}
+		String accessToken = authHeader.substring(7).trim();
+		String username = SecurityUtil.resolveApiToken(accessToken);
+		if (username == null) {
+			throw new SQLException("Invalid or expired authorization token");
+		}
 		return DBUtil.getUserInfo(username);
-		
-	}
-	
-	public static String makeRandomString() {
-	    byte[] array = new byte[7]; // length is bounded by 7
-	    new Random().nextBytes(array);
-	    String generatedString = new String(array, Charset.forName("UTF-8"));
-	 
-	    return generatedString;
 	}
 	
  }

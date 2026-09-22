@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.ibm.security.appscan.Log4AltoroJ;
+import com.ibm.security.appscan.altoromutual.security.SecurityUtil;
 import com.ibm.security.appscan.altoromutual.util.DBUtil;
 import com.ibm.security.appscan.altoromutual.util.ServletUtil;
 
@@ -49,13 +50,25 @@ public class LoginServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		//log out
+		//log out — fully invalidate session and clear account cookie
 		try {
 			HttpSession session = request.getSession(false);
-			session.removeAttribute(ServletUtil.SESSION_ATTR_USER);
+			if (session != null) {
+				Object user = session.getAttribute(ServletUtil.SESSION_ATTR_USER);
+				if (user instanceof com.ibm.security.appscan.altoromutual.model.User) {
+					SecurityUtil.revokeApiTokensForUser(
+							((com.ibm.security.appscan.altoromutual.model.User) user).getUsername());
+				}
+				session.invalidate();
+			}
 		} catch (Exception e){
 			// do nothing
 		} finally {
+			Cookie clear = new Cookie(ServletUtil.ALTORO_COOKIE, "");
+			clear.setMaxAge(0);
+			clear.setPath(request.getContextPath().length() > 0 ? request.getContextPath() : "/");
+			clear.setHttpOnly(true);
+			response.addCookie(clear);
 			response.sendRedirect("index.jsp");
 		}
 		
@@ -65,10 +78,6 @@ public class LoginServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		//log in
-		// Create session if there isn't one:
-		HttpSession session = request.getSession(true);
-
 		String username = null;
 		
 		try {
@@ -77,10 +86,13 @@ public class LoginServlet extends HttpServlet {
 				username = username.trim().toLowerCase();
 			
 			String password = request.getParameter("passw");
-			password = password.trim().toLowerCase(); //in real life the password usually is case sensitive and this cast would not be done
+			if (password == null) {
+				password = "";
+			}
+			// Passwords are case-sensitive; do not fold case.
 			
 			if (!DBUtil.isValidUser(username, password)){
-				Log4AltoroJ.getInstance().logError("Login failed >>> User: " +username + " >>> Password: " + password);
+				Log4AltoroJ.getInstance().logError("Login failed >>> User: " + username);
 				throw new Exception("Login Failed: We're sorry, but this username or password was not found in our system. Please try again.");
 			}
 		} catch (Exception ex) {
@@ -89,10 +101,19 @@ public class LoginServlet extends HttpServlet {
 			return;
 		}
 
-		//Handle the cookie using ServletUtil.establishSession(String)
+		// Mitigate session fixation: discard pre-auth session and create a fresh one
+		HttpSession oldSession = request.getSession(false);
+		if (oldSession != null) {
+			oldSession.invalidate();
+		}
+		HttpSession session = request.getSession(true);
+		SecurityUtil.getOrCreateCsrfToken(session);
+
 		try{
-			Cookie accountCookie = ServletUtil.establishSession(username,session);
-			response.addCookie(accountCookie);
+			Cookie accountCookie = ServletUtil.establishSession(username, session);
+			if (accountCookie != null) {
+				response.addCookie(accountCookie);
+			}
 			response.sendRedirect(request.getContextPath()+"/bank/main.jsp");
 			}
 		catch (Exception ex){

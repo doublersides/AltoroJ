@@ -8,6 +8,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.ibm.security.appscan.altoromutual.security.SecurityUtil;
 import com.ibm.security.appscan.altoromutual.util.ServletUtil;
 
 @Path("/logout")
@@ -18,7 +19,15 @@ public class LogoutAPI extends AltoroAPI{
 	public Response doLogOut(@Context HttpServletRequest request){
 		
 		try{
-			request.getSession().removeAttribute(ServletUtil.SESSION_ATTR_USER);
+			String authHeader = request.getHeader("Authorization");
+			if (authHeader != null && authHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+				SecurityUtil.revokeApiToken(authHeader.substring(7).trim());
+			}
+			if (request.getSession(false) != null) {
+				request.getSession().invalidate();
+			} else {
+				request.getSession(true).removeAttribute(ServletUtil.SESSION_ATTR_USER);
+			}
 			String response="{\"LoggedOut\" : \"True\"}";
 			return Response.status(Response.Status.OK).entity(response).type(MediaType.APPLICATION_JSON_TYPE).build();}
 		catch(Exception e){
