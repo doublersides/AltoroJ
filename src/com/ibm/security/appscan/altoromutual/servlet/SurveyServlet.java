@@ -78,7 +78,10 @@ public class SurveyServlet extends HttpServlet {
 		}
 		else if (step.equals("done")){
 			content = "<h1>Thanks</h1>"+
-			"<div width=\"99%\"><p>Thanks for your entry.  We will contact you shortly at:<br /><br /> <b>" + request.getParameter("txtEmail") + "</b></p></div>";
+			"<div width=\"99%\"><p>Thanks for your entry.  We will contact you shortly at:<br /><br /> <b>" +
+			com.ibm.security.appscan.altoromutual.util.ServletUtil.sanitizeWeb(
+					request.getParameter("txtEmail") == null ? "" : request.getParameter("txtEmail")) +
+			"</b></p></div>";
 			previousStep="email";
 		}
 		else {

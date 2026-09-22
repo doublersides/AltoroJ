@@ -37,12 +37,14 @@ IBM AltoroJ
 		
 		if (error != null && error.trim().length() > 0){
 			request.getSession().removeAttribute("loginError");
-			out.print(error);
+			out.print(com.ibm.security.appscan.altoromutual.util.ServletUtil.sanitizeWeb(error));
 		}
 		%>
 		</span></p>
 		
 		<form action="doLogin" method="post" name="login" id="login" onsubmit="return (confirminput(login));">
+		  <%@page import="com.ibm.security.appscan.altoromutual.security.SecurityUtil"%>
+		  <input type="hidden" name="csrfToken" value="<%= SecurityUtil.getOrCreateCsrfToken(request.getSession()) %>"/>
 		  <table>
 		    <tr>
 		      <td>

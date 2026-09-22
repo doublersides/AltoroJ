@@ -44,23 +44,23 @@ IBM AltoroJ
 			<table border=0>
 			  <tr>
 			    <td align=right>Feedback ID:</td>
-			    <td valign=top><%=feedbackDetails.get(i).getFeedbackID() %></td>
+			    <td valign=top><%=ServletUtil.sanitizeWeb(String.valueOf(feedbackDetails.get(i).getFeedbackID())) %></td>
 			  </tr>
 			  <tr>
 			    <td align=right>Customer Name:</td>
-			    <td valign=top><%=feedbackDetails.get(i).getName() %></td>
+			    <td valign=top><%=ServletUtil.sanitizeWeb(feedbackDetails.get(i).getName()) %></td>
 			  </tr>
 			  <tr>
 			    <td align=right>Customer Email Address:</td>
-			    <td valign=top><%=feedbackDetails.get(i).getEmail() %></td>
+			    <td valign=top><%=ServletUtil.sanitizeWeb(feedbackDetails.get(i).getEmail()) %></td>
 			  </tr>
 			  <tr>
 			    <td align=right>Customer Subject:</td>
-			    <td valign=top><%=feedbackDetails.get(i).getSubject() %></td>
+			    <td valign=top><%=ServletUtil.sanitizeWeb(feedbackDetails.get(i).getSubject()) %></td>
 			  </tr>
 			  <tr>
 			    <td align=right valign=top>Customer Question/Comment:</td>
-			    <td><%=feedbackDetails.get(i).getMessage()%></td>
+			    <td><%=ServletUtil.sanitizeWeb(feedbackDetails.get(i).getMessage())%></td>
 			  </tr>
 			</table>
 			<hr>

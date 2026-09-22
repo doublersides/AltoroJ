@@ -29,11 +29,11 @@ IBM AltoroJ
 		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
 		<div class="fl" style="width: 99%;">
 			<h1>Search News Articles</h1>
-			<form id="QueryXpath" method="get" action="<%=request.getRequestURL()%>">
+			<form id="QueryXpath" method="get" action="<%=request.getContextPath()%>/bank/queryxpath.jsp">
 			  Search our news articles database
 			  <br /><br />
-				<input type="hidden" id=content" name="content" value="queryxpath.jsp"/>
-				<input type="text" id="query" name="query" width=450 value="<%=(request.getParameter("query")==null)?"Enter title (e.g. Watchfire)":request.getParameter("query")%>"/>
+				<input type="hidden" id="content" name="content" value="queryxpath.jsp"/>
+				<input type="text" id="query" name="query" width=450 value="<%=ServletUtil.sanitizeWeb((request.getParameter("query")==null)?"Enter title (e.g. Watchfire)":request.getParameter("query"))%>"/>
 				<input type="submit" width=75 id="Button1" value="Query">
 			  <br /><br />
 			<%
@@ -44,7 +44,7 @@ IBM AltoroJ
 				else {
 					out.println("Found news title:<br/>");
 					for(String result:results)
-				out.println(result+"<br/>");
+				out.println(ServletUtil.sanitizeWeb(result)+"<br/>");
 				}
 			}
 			%>

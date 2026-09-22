@@ -39,13 +39,13 @@ IBM AltoroJ
 		
 		 <h1>Thank You</h1>
 		 
-		 <p>Thank you for your comments<%= (request.getAttribute("message_feedback")!=null)?", "+request.getAttribute("message_feedback"):"" %>.  They will be reviewed by our Customer Service staff and given the full attention that they deserve. 
+		 <p>Thank you for your comments<%= (request.getAttribute("message_feedback")!=null)?", "+ServletUtil.sanitizeWeb(String.valueOf(request.getAttribute("message_feedback"))):"" %>.  They will be reviewed by our Customer Service staff and given the full attention that they deserve. 
 		 <% String email = (String) request.getParameter("email_addr"); 
 		 	boolean regExMatch = email!=null && email.matches(ServletUtil.EMAIL_REGEXP);
 		 	if (email != null && email.trim().length() != 0 && regExMatch) {%> 
-			 Our reply will be sent to your email: <%= ServletUtil.sanitzieHtmlWithRegex(email.toLowerCase())/*ServletUtil.sanitizeWeb(email.toLowerCase())*/%>
+			 Our reply will be sent to your email: <%= ServletUtil.sanitizeWeb(email.toLowerCase())%>
 		<% } else {%>
-			However, the email you gave is incorrect (<%=ServletUtil.sanitzieHtmlWithRegex(email.toLowerCase()) /*ServletUtil.sanitizeWeb(email.toLowerCase())*/%>) and you will not receive a response.
+			However, the email you gave is incorrect (<%=ServletUtil.sanitizeWeb(email == null ? "" : email.toLowerCase())%>) and you will not receive a response.
 		<% }%>
 		</p>
 		<% if (ServletUtil.isAppPropertyTrue("enableFeedbackRetention")){%>
@@ -71,19 +71,19 @@ IBM AltoroJ
 			<table border=0>
 			  <tr>
 			    <td align=right>Your Name:</td>
-			    <td valign=top><%=feedbackDetails.getName() %></td>
+			    <td valign=top><%=ServletUtil.sanitizeWeb(feedbackDetails.getName()) %></td>
 			  </tr>
 			  <tr>
 			    <td align=right>Your Email Address:</td>
-			    <td valign=top><%=feedbackDetails.getEmail() %></td>
+			    <td valign=top><%=ServletUtil.sanitizeWeb(feedbackDetails.getEmail()) %></td>
 			  </tr>
 			  <tr>
 			    <td align=right>Subject:</td>
-			    <td valign=top><%=feedbackDetails.getSubject() %></td>
+			    <td valign=top><%=ServletUtil.sanitizeWeb(feedbackDetails.getSubject()) %></td>
 			  </tr>
 			  <tr>
 			    <td align=right valign=top>Question/Comment:</td>
-			    <td><%=feedbackDetails.getMessage()%></td>
+			    <td><%=ServletUtil.sanitizeWeb(feedbackDetails.getMessage())%></td>
 			  </tr>
 			</table>
 		<% } %>

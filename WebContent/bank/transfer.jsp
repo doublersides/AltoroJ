@@ -56,6 +56,9 @@ IBM AltoroJ
 		<div class="fl" style="width: 99%;">
 		
 		<form id="tForm" name="tForm" method="post" action="doTransfer" onsubmit="return (confirminput(tForm));">
+		<%@page import="com.ibm.security.appscan.altoromutual.security.SecurityUtil"%>
+		<%@page import="com.ibm.security.appscan.altoromutual.util.ServletUtil"%>
+		<input type="hidden" name="csrfToken" value="<%= SecurityUtil.getOrCreateCsrfToken(request.getSession()) %>"/>
 		
 		<h1>Transfer Funds</h1>
 		
@@ -98,7 +101,7 @@ IBM AltoroJ
 		  </tr>
 		  <tr>
 		    <td colspan="2" align="center">
-		    <span id="_ctl0__ctl0_Content_Main_postResp" align="center"><span style='color: Red'><%=(request.getAttribute("message")==null)?"":request.getAttribute("message") %></span></span>
+		    <span id="_ctl0__ctl0_Content_Main_postResp" align="center"><span style='color: Red'><%=(request.getAttribute("message")==null)?"":ServletUtil.sanitizeWeb(String.valueOf(request.getAttribute("message"))) %></span></span>
 		    <span id="soapResp" name="soapResp" align="center" />
 		    </td>
 		  </tr>

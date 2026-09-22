@@ -118,14 +118,15 @@ IBM AltoroJ
 			}
 		</script>
 		
-		<font style="bold" color="red"><%=error%></font>
+		<font style="bold" color="red"><%=com.ibm.security.appscan.altoromutual.util.ServletUtil.sanitizeWeb(error == null ? "" : error)%></font>
 		<form id="Form1" name="Form1" method="post" action="showTransactions" onsubmit="return (confirminput(Form1));">
+		<input type="hidden" name="csrfToken" value="<%= com.ibm.security.appscan.altoromutual.security.SecurityUtil.getOrCreateCsrfToken(request.getSession()) %>"/>
 		<table border="0" style="padding-bottom:10px;">
 		    <tr>
 		        <td valign=top>After</td>
-		        <td><input id="startDate" name="startDate" type="text" value="<%=(request.getParameter("startDate")==null)?"":request.getParameter("startDate")%>"/><br /><span class="credit">yyyy-mm-dd</span></td>
+		        <td><input id="startDate" name="startDate" type="text" value="<%=com.ibm.security.appscan.altoromutual.util.ServletUtil.sanitizeWeb((request.getParameter("startDate")==null)?"":request.getParameter("startDate"))%>"/><br /><span class="credit">yyyy-mm-dd</span></td>
 		        <td valign=top>Before</td>
-		        <td><input name="endDate" id="endDate" type="text" value="<%=(request.getParameter("endDate")==null)?"":request.getParameter("endDate") %>"/><br /><span class="credit">yyyy-mm-dd</span></td>
+		        <td><input name="endDate" id="endDate" type="text" value="<%=com.ibm.security.appscan.altoromutual.util.ServletUtil.sanitizeWeb((request.getParameter("endDate")==null)?"":request.getParameter("endDate")) %>"/><br /><span class="credit">yyyy-mm-dd</span></td>
 		        <td valign=top><input type=submit value=Submit /></td>
 		    </tr>
 		</table>

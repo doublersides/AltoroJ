@@ -18,6 +18,7 @@ IBM AltoroJ
 package com.ibm.security.appscan.altoromutual.servlet;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -25,6 +26,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ibm.security.appscan.altoromutual.model.User;
+import com.ibm.security.appscan.altoromutual.model.User.Role;
+import com.ibm.security.appscan.altoromutual.util.DBUtil;
 import com.ibm.security.appscan.altoromutual.util.ServletUtil;
 
 /**
@@ -38,18 +42,35 @@ public class AdminLoginServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		String username = request.getParameter("username");
 		String password = request.getParameter("password");
-		if (password == null){
+		if (password == null || username == null || username.trim().length() == 0){
 			response.sendRedirect(request.getContextPath()+"/admin/login.jsp");
 			return ;
-		} else if (!password.equals("Altoro1234")){
+		}
+
+		username = username.trim().toLowerCase();
+		try {
+			if (!DBUtil.isValidUser(username, password)) {
+				request.setAttribute("loginError", "Login failed.");
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/admin/login.jsp");
+				dispatcher.forward(request, response);
+				return;
+			}
+			User user = DBUtil.getUserInfo(username);
+			if (user == null || user.getRole() != Role.Admin) {
+				request.setAttribute("loginError", "Login failed.");
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/admin/login.jsp");
+				dispatcher.forward(request, response);
+				return;
+			}
+			request.getSession(true).setAttribute(ServletUtil.SESSION_ATTR_ADMIN_KEY, ServletUtil.SESSION_ATTR_ADMIN_VALUE);
+			request.getSession(true).setAttribute(ServletUtil.SESSION_ATTR_USER, user);
+			response.sendRedirect(request.getContextPath()+"/admin/admin.jsp");
+		} catch (SQLException e) {
 			request.setAttribute("loginError", "Login failed.");
 			RequestDispatcher dispatcher = request.getRequestDispatcher("/admin/login.jsp");
 			dispatcher.forward(request, response);
-			return;
-		} else {
-			request.getSession(true).setAttribute(ServletUtil.SESSION_ATTR_ADMIN_KEY, ServletUtil.SESSION_ATTR_ADMIN_VALUE);
-			response.sendRedirect(request.getContextPath()+"/admin/admin.jsp");
 		}
 	}
 }
