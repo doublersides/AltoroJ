@@ -517,7 +517,7 @@ public class DBUtil {
 			
 			return users.toArray(new String[users.size()]);
 		} catch (SQLException e){
-			e.printStackTrace();
+			Log4AltoroJ.getInstance().logError("Failed to retrieve bank usernames");
 			return new String[0];
 		}
 	}
